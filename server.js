@@ -9,9 +9,32 @@ const { promisify } = require('util');
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// Middleware
+// Middleware - Dynamic CORS configuration
+const corsOrigins = process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',') : ['http://localhost:5173'];
+
 app.use(cors({
-  origin: ['http://localhost:5173', 'http://localhost:3000'], // Vite et CRA
+  origin: (origin, callback) => {
+    // Allow requests with no origin (mobile apps, Postman, etc.)
+    if (!origin) return callback(null, true);
+    
+    // Check if origin matches any allowed pattern
+    const isAllowed = corsOrigins.some(allowedOrigin => {
+      if (allowedOrigin.includes('*')) {
+        // Convert wildcard pattern to regex
+        const pattern = allowedOrigin.replace(/\*/g, '.*');
+        const regex = new RegExp(`^${pattern}$`);
+        return regex.test(origin);
+      }
+      return allowedOrigin === origin;
+    });
+    
+    if (isAllowed) {
+      callback(null, true);
+    } else {
+      console.warn(`CORS: Origin ${origin} not allowed`);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true
 }));
 app.use(express.json({ limit: '50mb' }));
