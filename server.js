@@ -282,6 +282,33 @@ app.post('/api/process-video', upload.single('video'), async (req, res) => {
   }
 });
 
+// Page d'accueil informative
+app.get('/', (req, res) => {
+  res.set('Content-Type', 'text/html; charset=utf-8');
+  res.send(`<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <title>Inshove Backend - API</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif; margin: 40px; line-height: 1.6; color: #222; }
+    code { background: #f5f5f5; padding: 2px 6px; border-radius: 4px; }
+    a { color: #0b5fff; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <h1>Inshove Backend - API</h1>
+  <p>Serveur en ligne. Utilisez les endpoints ci-dessous:</p>
+  <ul>
+    <li><a href="/health">/health</a> - statut</li>
+    <li><a href="/api/test">/api/test</a> - test</li>
+  </ul>
+</body>
+</html>`);
+});
+
 // Endpoint de santé
 app.get('/health', (req, res) => {
   const uptime = process.uptime();
@@ -305,6 +332,14 @@ app.get('/api/test', (req, res) => {
     message: 'Serveur de traitement vidéo opérationnel',
     version: '1.0.0',
     endpoints: ['/health', '/api/process-video', '/api/test']
+  });
+});
+
+// 404 pour routes non définies
+app.use((req, res, next) => {
+  res.status(404).json({
+    error: 'Route non trouvée',
+    path: req.originalUrl
   });
 });
 
